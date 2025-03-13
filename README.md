@@ -55,6 +55,7 @@ CharityConnect is a web application that connects donors with charities, facilit
 3. Install and compile frontend assets:
    ```bash
    npm install
+   npm run build
    ```
 
 4. Create a copy of the .env file:
