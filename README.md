@@ -77,6 +77,9 @@ CharityConnect is a web application that connects donors with charities, facilit
    DB_USERNAME=root
    DB_PASSWORD=
    ```
+   ```
+   message xuyang for email credentials
+   ```
 
 7. Run database migrations and seed initial data:
    ```bash
@@ -110,16 +113,16 @@ CharityConnect is a web application that connects donors with charities, facilit
 ## Default Login Credentials
 
 ### Administrator
-- Email: admin@example.com
-- Password: password
+- Email:
+- Password: 
 
 ### Charity
-- Email: charity@example.com
-- Password: password
+- Email:
+- Password:
 
 ### Donor
-- Email: donor@example.com
-- Password: password
+- Email:
+- Password:
 
 ## Project Structure
 
