@@ -52,7 +52,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 });
 
 // Admin routes
-Route::middleware(['auth', 'verified', 'can:admin'])->prefix('admin')->group(function () {
+Route::middleware(['auth', 'verified'])->prefix('admin')->group(function () {
     Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('admin.dashboard');
     Route::get('/charities', [AdminController::class, 'charities'])->name('admin.charities');
     Route::patch('/charities/{charity}/approve', [AdminController::class, 'approveCharity'])->name('admin.charities.approve');

@@ -62,7 +62,7 @@ class AdminController extends Controller
 
         $pendingCharities = Charity::where('status', 'pending')->get();
 
-        return view('admin.dashboard', compact('stats', 'pendingCharities'));
+        return response()->view('admin.dashboard', compact('stats', 'pendingCharities'));
     }
 
     /**
@@ -73,7 +73,7 @@ class AdminController extends Controller
     public function charities()
     {
         $charities = Charity::all();
-        return view('admin.charities', compact('charities'));
+        return response()->view('admin.charities', compact('charities'));
     }
 
     /**
@@ -87,7 +87,7 @@ class AdminController extends Controller
         $charity->status = 'approved';
         $charity->save();
 
-        return redirect()->route('admin.charities')->with('success', 'Charity approved successfully.');
+        return response()->redirect()->route('admin.charities')->with('success', 'Charity approved successfully.');
     }
 
     /**
@@ -101,7 +101,7 @@ class AdminController extends Controller
         $charity->status = 'rejected';
         $charity->save();
 
-        return redirect()->route('admin.charities')->with('success', 'Charity rejected successfully.');
+        return response()->redirect()->route('admin.charities')->with('success', 'Charity rejected successfully.');
     }
 
     /**
@@ -112,6 +112,6 @@ class AdminController extends Controller
     public function users()
     {
         $users = User::all();
-        return view('admin.users', compact('users'));
+        return response()->view('admin.users', compact('users'));
     }
 }
