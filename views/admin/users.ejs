@@ -1,0 +1,211 @@
+<%- include('../partials/header') %>
+
+<div class="row mb-4">
+    <div class="col-md-12">
+        <div class="d-flex justify-content-between align-items-center">
+            <h1 class="mb-0">Manage Users</h1>
+        </div>
+    </div>
+</div>
+
+<!-- Filters -->
+<div class="row mb-4">
+    <div class="col-md-12">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body">
+                <form action="/admin/users" method="GET" class="row g-3">
+                    <div class="col-md-4">
+                        <label for="role" class="form-label">Role</label>
+                        <select name="role" id="role" class="form-select">
+                            <option value="">All Roles</option>
+                            <option value="admin" <%= filters.role === 'admin' ? 'selected' : '' %>>Admin</option>
+                            <option value="charity" <%= filters.role === 'charity' ? 'selected' : '' %>>Charity</option>
+                            <option value="public_user" <%= filters.role === 'public_user' ? 'selected' : '' %>>Public User</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="search" class="form-label">Search</label>
+                        <input type="text" name="search" id="search" class="form-control" placeholder="Search by name or email" value="<%= filters.search || '' %>">
+                    </div>
+                    <div class="col-md-2 d-flex align-items-end">
+                        <button type="submit" class="btn btn-primary w-100">Filter</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Users List -->
+<div class="row">
+    <div class="col-md-12">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body">
+                <% if (users && users.length > 0) { %>
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Email</th>
+                                    <th>Role</th>
+                                    <th>Verified</th>
+                                    <th>Charity</th>
+                                    <th>Registered</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <% users.forEach(function(user) { %>
+                                    <tr>
+                                        <td><%= user.name %></td>
+                                        <td><%= user.email %></td>
+                                        <td>
+                                            <span class="badge <%= user.role === 'admin' ? 'bg-danger' : (user.role === 'charity' ? 'bg-primary' : 'bg-success') %>">
+                                                <%= user.role === 'public_user' ? 'Donor' : user.role.charAt(0).toUpperCase() + user.role.slice(1) %>
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <% if (user.email_verified) { %>
+                                                <i class="fas fa-check-circle text-success"></i>
+                                            <% } else { %>
+                                                <i class="fas fa-times-circle text-danger"></i>
+                                            <% } %>
+                                        </td>
+                                        <td>
+                                            <% if (user.charity) { %>
+                                                <a href="/admin/charities/<%= user.charity.id %>"><%= user.charity.name %></a>
+                                            <% } else { %>
+                                                -
+                                            <% } %>
+                                        </td>
+                                        <td><%= new Date(user.created_at).toLocaleDateString() %></td>
+                                        <td>
+                                            <div class="dropdown">
+                                                <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" id="userActions<%= user.id %>" data-bs-toggle="dropdown" aria-expanded="false">
+                                                    Actions
+                                                </button>
+                                                <ul class="dropdown-menu" aria-labelledby="userActions<%= user.id %>">
+                                                    <% if (!user.email_verified) { %>
+                                                        <li><button class="dropdown-item verify-user" data-id="<%= user.id %>">Verify Email</button></li>
+                                                    <% } %>
+                                                    <% if (user.role !== 'admin') { %>
+                                                        <li><button class="dropdown-item reset-password" data-id="<%= user.id %>" data-email="<%= user.email %>">Reset Password</button></li>
+                                                    <% } %>
+                                                    <% if (user.id !== user.id) { %>
+                                                        <li><hr class="dropdown-divider"></li>
+                                                        <li><button class="dropdown-item text-danger delete-user" data-id="<%= user.id %>" data-name="<%= user.name %>">Delete User</button></li>
+                                                    <% } %>
+                                                </ul>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                <% }); %>
+                            </tbody>
+                        </table>
+                    </div>
+                <% } else { %>
+                    <div class="text-center py-5">
+                        <i class="fas fa-users fa-3x text-muted mb-3"></i>
+                        <h5>No users found</h5>
+                        <p class="text-muted">No users match your current filters.</p>
+                    </div>
+                <% } %>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Verify user
+        document.querySelectorAll('.verify-user').forEach(button => {
+            button.addEventListener('click', function() {
+                const userId = this.getAttribute('data-id');
+                
+                if (confirm('Are you sure you want to verify this user\'s email?')) {
+                    fetch(`/admin/users/${userId}/verify`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            alert('User email verified successfully');
+                            location.reload();
+                        } else {
+                            alert(data.message || 'An error occurred');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('An error occurred while verifying user');
+                    });
+                }
+            });
+        });
+        
+        // Reset password
+        document.querySelectorAll('.reset-password').forEach(button => {
+            button.addEventListener('click', function() {
+                const userId = this.getAttribute('data-id');
+                const userEmail = this.getAttribute('data-email');
+                
+                if (confirm(`Are you sure you want to send a password reset email to ${userEmail}?`)) {
+                    fetch(`/admin/users/${userId}/reset-password`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            alert('Password reset email sent successfully');
+                        } else {
+                            alert(data.message || 'An error occurred');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('An error occurred while sending password reset email');
+                    });
+                }
+            });
+        });
+        
+        // Delete user
+        document.querySelectorAll('.delete-user').forEach(button => {
+            button.addEventListener('click', function() {
+                const userId = this.getAttribute('data-id');
+                const userName = this.getAttribute('data-name');
+                
+                if (confirm(`Are you sure you want to delete user ${userName}? This action cannot be undone.`)) {
+                    fetch(`/admin/users/${userId}`, {
+                        method: 'DELETE',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            alert('User deleted successfully');
+                            location.reload();
+                        } else {
+                            alert(data.message || 'An error occurred');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('An error occurred while deleting user');
+                    });
+                }
+            });
+        });
+    });
+</script>
+
+<%- include('../partials/footer') %>

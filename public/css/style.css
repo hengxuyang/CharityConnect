@@ -1,0 +1,228 @@
+/* CharityConnect Custom Styles */
+
+/* Global Styles */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color: #333;
+    background-color: #f8f9fa;
+}
+
+/* Navbar Customization */
+.navbar-brand {
+    font-weight: 600;
+    font-size: 1.4rem;
+}
+
+/* Card Styles */
+.card {
+    border-radius: 0.5rem;
+    overflow: hidden;
+    transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+}
+
+.card-header {
+    font-weight: 600;
+}
+
+/* Button Styles */
+.btn {
+    border-radius: 0.25rem;
+    padding: 0.5rem 1rem;
+    font-weight: 500;
+    transition: all 0.3s;
+}
+
+.btn-primary {
+    background-color: #4a6f8a;
+    border-color: #4a6f8a;
+}
+
+.btn-primary:hover, .btn-primary:focus {
+    background-color: #3a5a70;
+    border-color: #3a5a70;
+}
+
+.btn-success {
+    background-color: #5a9a6f;
+    border-color: #5a9a6f;
+}
+
+.btn-success:hover, .btn-success:focus {
+    background-color: #4a8a5f;
+    border-color: #4a8a5f;
+}
+
+.btn-outline-primary {
+    color: #4a6f8a;
+    border-color: #4a6f8a;
+}
+
+.btn-outline-primary:hover, .btn-outline-primary:focus {
+    background-color: #4a6f8a;
+    border-color: #4a6f8a;
+}
+
+/* Form Styles */
+.form-control:focus {
+    border-color: #4a6f8a;
+    box-shadow: 0 0 0 0.25rem rgba(74, 111, 138, 0.25);
+}
+
+/* Badge Styles */
+.badge {
+    font-weight: 500;
+    padding: 0.35em 0.65em;
+    border-radius: 0.25rem;
+}
+
+/* Status Colors */
+.status-pending {
+    color: #f59f00;
+}
+
+.status-approved, .status-fulfilled, .status-delivered {
+    color: #40c057;
+}
+
+.status-rejected, .status-cancelled {
+    color: #fa5252;
+}
+
+/* Dashboard Stats */
+.stat-card {
+    border-left: 4px solid #4a6f8a;
+    background-color: white;
+    padding: 1rem;
+    border-radius: 0.5rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+}
+
+.stat-card .stat-icon {
+    font-size: 2rem;
+    color: #4a6f8a;
+}
+
+.stat-card .stat-value {
+    font-size: 1.8rem;
+    font-weight: 700;
+    margin-bottom: 0.25rem;
+}
+
+.stat-card .stat-label {
+    color: #6c757d;
+    font-size: 0.9rem;
+}
+
+/* Table Styles */
+.table th {
+    background-color: #f8f9fa;
+    font-weight: 600;
+}
+
+/* Footer Styles */
+footer {
+    margin-top: 3rem;
+}
+
+footer a {
+    text-decoration: none;
+}
+
+footer a:hover {
+    text-decoration: underline;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    .container {
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+    
+    .stat-card .stat-value {
+        font-size: 1.5rem;
+    }
+}
+
+/* Inventory Status Colors */
+.inventory-low {
+    color: #fa5252;
+}
+
+.inventory-medium {
+    color: #f59f00;
+}
+
+.inventory-good {
+    color: #40c057;
+}
+
+/* Request Type Badges */
+.badge-drop-off {
+    background-color: #4a6f8a;
+    color: white;
+}
+
+.badge-pickup {
+    background-color: #5a9a6f;
+    color: white;
+}
+
+/* Notification Styles */
+.notification-item {
+    border-left: 3px solid #4a6f8a;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    background-color: white;
+    border-radius: 0.25rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.notification-item .notification-time {
+    color: #6c757d;
+    font-size: 0.8rem;
+}
+
+.notification-item.unread {
+    background-color: #f0f7ff;
+}
+
+/* Category Icons */
+.category-icon {
+    width: 60px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background-color: #f8f9fa;
+    margin: 0 auto 1rem;
+}
+
+.category-icon i {
+    font-size: 1.5rem;
+    color: #4a6f8a;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+}

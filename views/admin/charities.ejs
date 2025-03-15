@@ -1,0 +1,195 @@
+<%- include('../partials/header') %>
+
+<div class="row mb-4">
+    <div class="col-md-12">
+        <div class="d-flex justify-content-between align-items-center">
+            <h1 class="mb-0">Manage Charities</h1>
+        </div>
+    </div>
+</div>
+
+<!-- Filters -->
+<div class="row mb-4">
+    <div class="col-md-12">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body">
+                <form action="/admin/charities" method="GET" class="row g-3">
+                    <div class="col-md-4">
+                        <label for="status" class="form-label">Status</label>
+                        <select name="status" id="status" class="form-select">
+                            <option value="">All Statuses</option>
+                            <option value="pending" <%= filters.status === 'pending' ? 'selected' : '' %>>Pending</option>
+                            <option value="approved" <%= filters.status === 'approved' ? 'selected' : '' %>>Approved</option>
+                            <option value="rejected" <%= filters.status === 'rejected' ? 'selected' : '' %>>Rejected</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="search" class="form-label">Search</label>
+                        <input type="text" name="search" id="search" class="form-control" placeholder="Search by name or email" value="<%= filters.search || '' %>">
+                    </div>
+                    <div class="col-md-2 d-flex align-items-end">
+                        <button type="submit" class="btn btn-primary w-100">Filter</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Charities List -->
+<div class="row">
+    <div class="col-md-12">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body">
+                <% if (charities && charities.length > 0) { %>
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Email</th>
+                                    <th>Phone</th>
+                                    <th>Status</th>
+                                    <th>Date Registered</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <% charities.forEach(function(charity) { %>
+                                    <tr>
+                                        <td><%= charity.name %></td>
+                                        <td><%= charity.email %></td>
+                                        <td><%= charity.phone %></td>
+                                        <td>
+                                            <span class="badge <%= charity.status === 'pending' ? 'bg-warning' : (charity.status === 'approved' ? 'bg-success' : 'bg-danger') %>">
+                                                <%= charity.status.charAt(0).toUpperCase() + charity.status.slice(1) %>
+                                            </span>
+                                        </td>
+                                        <td><%= new Date(charity.created_at).toLocaleDateString() %></td>
+                                        <td>
+                                            <a href="/admin/charities/<%= charity.id %>" class="btn btn-sm btn-primary">
+                                                <i class="fas fa-eye"></i> View
+                                            </a>
+                                            <% if (charity.status === 'pending') { %>
+                                                <button class="btn btn-sm btn-success approve-charity" data-id="<%= charity.id %>">
+                                                    <i class="fas fa-check"></i> Approve
+                                                </button>
+                                                <button class="btn btn-sm btn-danger reject-charity" data-id="<%= charity.id %>">
+                                                    <i class="fas fa-times"></i> Reject
+                                                </button>
+                                            <% } %>
+                                        </td>
+                                    </tr>
+                                <% }); %>
+                            </tbody>
+                        </table>
+                    </div>
+                <% } else { %>
+                    <div class="text-center py-5">
+                        <i class="fas fa-building fa-3x text-muted mb-3"></i>
+                        <h5>No charities found</h5>
+                        <p class="text-muted">No charities match your current filters.</p>
+                    </div>
+                <% } %>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Reject Charity Modal -->
+<div class="modal fade" id="rejectCharityModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Reject Charity</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="rejectCharityForm">
+                    <div class="mb-3">
+                        <label for="rejectReason" class="form-label">Reason for Rejection (Optional)</label>
+                        <textarea class="form-control" id="rejectReason" rows="3" placeholder="Provide a reason for rejecting this charity application"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-danger" id="confirmReject">Reject Charity</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Approve charity
+        document.querySelectorAll('.approve-charity').forEach(button => {
+            button.addEventListener('click', function() {
+                const charityId = this.getAttribute('data-id');
+                
+                if (confirm('Are you sure you want to approve this charity?')) {
+                    fetch(`/admin/charities/${charityId}/approve`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            alert('Charity approved successfully');
+                            location.reload();
+                        } else {
+                            alert(data.message || 'An error occurred');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('An error occurred while approving the charity');
+                    });
+                }
+            });
+        });
+        
+        // Reject charity modal
+        let charityIdToReject;
+        const rejectModal = new bootstrap.Modal(document.getElementById('rejectCharityModal'));
+        
+        document.querySelectorAll('.reject-charity').forEach(button => {
+            button.addEventListener('click', function() {
+                charityIdToReject = this.getAttribute('data-id');
+                rejectModal.show();
+            });
+        });
+        
+        // Confirm reject
+        document.getElementById('confirmReject').addEventListener('click', function() {
+            const reason = document.getElementById('rejectReason').value;
+            
+            fetch(`/admin/charities/${charityIdToReject}/reject`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ reason })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Charity rejected successfully');
+                    location.reload();
+                } else {
+                    alert(data.message || 'An error occurred');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred while rejecting the charity');
+            });
+            
+            rejectModal.hide();
+        });
+    });
+</script>
+
+<%- include('../partials/footer') %>

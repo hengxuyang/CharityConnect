@@ -1,0 +1,151 @@
+<%- include('partials/header') %>
+
+<!-- Hero Section -->
+<div class="bg-primary text-white py-5 mb-5">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-md-6">
+                <h1 class="display-4 fw-bold">Connect, Donate, Make a Difference</h1>
+                <p class="lead">CharityConnect brings together donors and charities to address community needs efficiently.</p>
+                <div class="mt-4">
+                    <a href="/auth/register" class="btn btn-light btn-lg me-2">Get Started</a>
+                    <a href="/about" class="btn btn-outline-light btn-lg">Learn More</a>
+                </div>
+            </div>
+            <div class="col-md-6 d-none d-md-block">
+                <img src="https://via.placeholder.com/600x400?text=Helping+Hands" alt="Helping Hands" class="img-fluid rounded shadow">
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Features Section -->
+<div class="container mb-5">
+    <div class="text-center mb-5">
+        <h2 class="fw-bold">How It Works</h2>
+        <p class="lead text-muted">A simple process to connect donors with charities</p>
+    </div>
+    
+    <div class="row g-4">
+        <div class="col-md-4">
+            <div class="card h-100 border-0 shadow-sm">
+                <div class="card-body text-center p-4">
+                    <div class="rounded-circle bg-primary text-white d-inline-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px;">
+                        <i class="fas fa-building fa-2x"></i>
+                    </div>
+                    <h4>Charities Register</h4>
+                    <p class="text-muted">Charities register and create profiles detailing their mission and needs.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card h-100 border-0 shadow-sm">
+                <div class="card-body text-center p-4">
+                    <div class="rounded-circle bg-primary text-white d-inline-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px;">
+                        <i class="fas fa-list-alt fa-2x"></i>
+                    </div>
+                    <h4>Post Donation Requests</h4>
+                    <p class="text-muted">Charities post specific requests for items they need with details on quantity and urgency.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card h-100 border-0 shadow-sm">
+                <div class="card-body text-center p-4">
+                    <div class="rounded-circle bg-primary text-white d-inline-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px;">
+                        <i class="fas fa-hands-helping fa-2x"></i>
+                    </div>
+                    <h4>Donors Contribute</h4>
+                    <p class="text-muted">Donors browse requests, choose items to donate, and arrange delivery or pickup.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Categories Section -->
+<div class="bg-light py-5 mb-5">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2 class="fw-bold">Donation Categories</h2>
+            <p class="lead text-muted">Browse donation requests by category</p>
+        </div>
+        
+        <div class="row g-4">
+            <div class="col-6 col-md-4 col-lg-2">
+                <div class="card h-100 border-0 shadow-sm text-center">
+                    <div class="card-body">
+                        <i class="fas fa-utensils fa-3x text-primary mb-3"></i>
+                        <h5>Food</h5>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6 col-md-4 col-lg-2">
+                <div class="card h-100 border-0 shadow-sm text-center">
+                    <div class="card-body">
+                        <i class="fas fa-tshirt fa-3x text-primary mb-3"></i>
+                        <h5>Clothing</h5>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6 col-md-4 col-lg-2">
+                <div class="card h-100 border-0 shadow-sm text-center">
+                    <div class="card-body">
+                        <i class="fas fa-pump-soap fa-3x text-primary mb-3"></i>
+                        <h5>Hygiene</h5>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6 col-md-4 col-lg-2">
+                <div class="card h-100 border-0 shadow-sm text-center">
+                    <div class="card-body">
+                        <i class="fas fa-medkit fa-3x text-primary mb-3"></i>
+                        <h5>Medical</h5>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6 col-md-4 col-lg-2">
+                <div class="card h-100 border-0 shadow-sm text-center">
+                    <div class="card-body">
+                        <i class="fas fa-book fa-3x text-primary mb-3"></i>
+                        <h5>Education</h5>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6 col-md-4 col-lg-2">
+                <div class="card h-100 border-0 shadow-sm text-center">
+                    <div class="card-body">
+                        <i class="fas fa-couch fa-3x text-primary mb-3"></i>
+                        <h5>Furniture</h5>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Call to Action -->
+<div class="container mb-5">
+    <div class="row">
+        <div class="col-md-6 mb-4 mb-md-0">
+            <div class="card bg-primary text-white h-100">
+                <div class="card-body p-4">
+                    <h3>For Charities</h3>
+                    <p>Register your organization to post donation requests and manage inventory efficiently.</p>
+                    <a href="/auth/register" class="btn btn-light">Register as Charity</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card bg-success text-white h-100">
+                <div class="card-body p-4">
+                    <h3>For Donors</h3>
+                    <p>Sign up to browse donation requests and make a difference in your community.</p>
+                    <a href="/auth/register" class="btn btn-light">Register as Donor</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<%- include('partials/footer') %>

@@ -1,0 +1,150 @@
+<%- include('../partials/header') %>
+
+<div class="row mb-4">
+    <div class="col-md-12">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/charity/dashboard">Dashboard</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Donation Requests</li>
+            </ol>
+        </nav>
+        <div class="d-flex justify-content-between align-items-center">
+            <h1 class="mb-0">Donation Requests</h1>
+            <a href="/charity/requests/create" class="btn btn-primary">
+                <i class="fas fa-plus me-1"></i> Create Request
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Filters -->
+<div class="row mb-4">
+    <div class="col-md-12">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body">
+                <form action="/charity/requests" method="GET" class="row g-3">
+                    <div class="col-md-4">
+                        <label for="status" class="form-label">Status</label>
+                        <select name="status" id="status" class="form-select">
+                            <option value="">All Statuses</option>
+                            <option value="Pending" <%= filters.status === 'Pending' ? 'selected' : '' %>>Pending</option>
+                            <option value="Fulfilled" <%= filters.status === 'Fulfilled' ? 'selected' : '' %>>Fulfilled</option>
+                            <option value="Cancelled" <%= filters.status === 'Cancelled' ? 'selected' : '' %>>Cancelled</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label for="category" class="form-label">Category</label>
+                        <select name="category" id="category" class="form-select">
+                            <option value="">All Categories</option>
+                            <% categories.forEach(function(category) { %>
+                                <option value="<%= category.id %>" <%= filters.category == category.id ? 'selected' : '' %>><%= category.name %></option>
+                            <% }); %>
+                        </select>
+                    </div>
+                    <div class="col-md-4 d-flex align-items-end">
+                        <button type="submit" class="btn btn-primary w-100">Filter</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Requests List -->
+<div class="row">
+    <div class="col-md-12">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body">
+                <% if (requests && requests.length > 0) { %>
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Item</th>
+                                    <th>Category</th>
+                                    <th>Quantity</th>
+                                    <th>Request Type</th>
+                                    <th>Status</th>
+                                    <th>Date Created</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <% requests.forEach(function(request) { %>
+                                    <tr>
+                                        <td><%= request.item.name %></td>
+                                        <td><%= request.item.category ? request.item.category.name : 'N/A' %></td>
+                                        <td><%= request.quantity %> <%= request.item.unit %>(s)</td>
+                                        <td><%= request.request_type %></td>
+                                        <td>
+                                            <span class="badge <%= request.status === 'Pending' ? 'bg-warning' : (request.status === 'Fulfilled' ? 'bg-success' : 'bg-secondary') %>">
+                                                <%= request.status %>
+                                            </span>
+                                        </td>
+                                        <td><%= new Date(request.created_at).toLocaleDateString() %></td>
+                                        <td>
+                                            <div class="btn-group">
+                                                <a href="/charity/requests/<%= request.id %>" class="btn btn-sm btn-primary">
+                                                    <i class="fas fa-eye"></i> View
+                                                </a>
+                                                <% if (request.status === 'Pending') { %>
+                                                    <button class="btn btn-sm btn-danger cancel-request" data-id="<%= request.id %>">
+                                                        <i class="fas fa-times"></i> Cancel
+                                                    </button>
+                                                <% } %>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                <% }); %>
+                            </tbody>
+                        </table>
+                    </div>
+                <% } else { %>
+                    <div class="text-center py-5">
+                        <i class="fas fa-list-alt fa-3x text-muted mb-3"></i>
+                        <h5>No donation requests found</h5>
+                        <p class="text-muted">No requests match your current filters or you haven't created any requests yet.</p>
+                        <a href="/charity/requests/create" class="btn btn-primary mt-3">
+                            <i class="fas fa-plus me-1"></i> Create Your First Request
+                        </a>
+                    </div>
+                <% } %>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Cancel request
+        document.querySelectorAll('.cancel-request').forEach(button => {
+            button.addEventListener('click', function() {
+                const requestId = this.getAttribute('data-id');
+                
+                if (confirm('Are you sure you want to cancel this request? This action cannot be undone.')) {
+                    fetch(`/charity/requests/${requestId}/cancel`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            alert('Request cancelled successfully');
+                            location.reload();
+                        } else {
+                            alert(data.message || 'An error occurred');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('An error occurred while cancelling the request');
+                    });
+                }
+            });
+        });
+    });
+</script>
+
+<%- include('../partials/footer') %>

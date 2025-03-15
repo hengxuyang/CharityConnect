@@ -1,0 +1,295 @@
+<%- include('../partials/header') %>
+
+<div class="row mb-4">
+    <div class="col-md-12">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/charity/dashboard">Dashboard</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Donations</li>
+            </ol>
+        </nav>
+        <h1 class="mb-3">Donations</h1>
+        <p class="text-muted">Manage and track donations made to your charity.</p>
+    </div>
+</div>
+
+<!-- Filters -->
+<div class="row mb-4">
+    <div class="col-md-12">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body">
+                <form action="/charity/donations" method="GET" class="row g-3">
+                    <div class="col-md-4">
+                        <label for="status" class="form-label">Status</label>
+                        <select name="status" id="status" class="form-select">
+                            <option value="">All Statuses</option>
+                            <option value="Pending" <%= filters.status === 'Pending' ? 'selected' : '' %>>Pending</option>
+                            <option value="Delivered" <%= filters.status === 'Delivered' ? 'selected' : '' %>>Delivered</option>
+                            <option value="Cancelled" <%= filters.status === 'Cancelled' ? 'selected' : '' %>>Cancelled</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4 d-flex align-items-end">
+                        <button type="submit" class="btn btn-primary w-100">Filter</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Donations List -->
+<div class="row">
+    <div class="col-md-12">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body">
+                <% if (donations && donations.length > 0) { %>
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Donor</th>
+                                    <th>Item</th>
+                                    <th>Quantity</th>
+                                    <th>Request Type</th>
+                                    <th>Status</th>
+                                    <th>Date</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <% donations.forEach(function(donation) { %>
+                                    <tr>
+                                        <td><%= donation.donor.name %></td>
+                                        <td><%= donation.request.item.name %></td>
+                                        <td><%= donation.quantity %> <%= donation.request.item.unit %>(s)</td>
+                                        <td><%= donation.request.request_type === 'pickup' ? 'Pickup' : 'Drop-off' %></td>
+                                        <td>
+                                            <span class="badge <%= donation.status === 'Pending' ? 'bg-warning' : (donation.status === 'Delivered' ? 'bg-success' : 'bg-secondary') %>">
+                                                <%= donation.status %>
+                                            </span>
+                                        </td>
+                                        <td><%= new Date(donation.created_at).toLocaleDateString() %></td>
+                                        <td>
+                                            <div class="btn-group">
+                                                <a href="/charity/requests/<%= donation.request.id %>" class="btn btn-sm btn-primary">
+                                                    <i class="fas fa-eye"></i> View Request
+                                                </a>
+                                                <% if (donation.status === 'Pending') { %>
+                                                    <button class="btn btn-sm btn-success update-donation" data-id="<%= donation.id %>" data-status="Delivered">
+                                                        <i class="fas fa-check"></i> Mark Delivered
+                                                    </button>
+                                                <% } else if (donation.status === 'Delivered') { %>
+                                                    <button class="btn btn-sm btn-info send-thank-you" data-id="<%= donation.id %>" data-donor="<%= donation.donor.name %>">
+                                                        <i class="fas fa-envelope"></i> Thank You
+                                                    </button>
+                                                <% } %>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                <% }); %>
+                            </tbody>
+                        </table>
+                    </div>
+                <% } else { %>
+                    <div class="text-center py-5">
+                        <i class="fas fa-gift fa-3x text-muted mb-3"></i>
+                        <h5>No donations found</h5>
+                        <p class="text-muted">No donations match your current filters or you haven't received any donations yet.</p>
+                    </div>
+                <% } %>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Donation Statistics -->
+<div class="row mt-4">
+    <div class="col-md-12">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">Donation Statistics</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <div class="card border-0 shadow-sm h-100">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="text-muted mb-1">Total Donations</h6>
+                                        <h2 class="mb-0"><%= donations ? donations.length : 0 %></h2>
+                                    </div>
+                                    <div class="bg-primary p-3 rounded">
+                                        <i class="fas fa-gift text-white fa-2x"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <div class="card border-0 shadow-sm h-100">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="text-muted mb-1">Pending Donations</h6>
+                                        <h2 class="mb-0">
+                                            <% 
+                                                let pendingCount = 0;
+                                                if (donations && donations.length > 0) {
+                                                    donations.forEach(function(donation) {
+                                                        if (donation.status === 'Pending') {
+                                                            pendingCount++;
+                                                        }
+                                                    });
+                                                }
+                                            %>
+                                            <%= pendingCount %>
+                                        </h2>
+                                    </div>
+                                    <div class="bg-warning p-3 rounded">
+                                        <i class="fas fa-truck text-white fa-2x"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <div class="card border-0 shadow-sm h-100">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="text-muted mb-1">Delivered Donations</h6>
+                                        <h2 class="mb-0">
+                                            <% 
+                                                let deliveredCount = 0;
+                                                if (donations && donations.length > 0) {
+                                                    donations.forEach(function(donation) {
+                                                        if (donation.status === 'Delivered') {
+                                                            deliveredCount++;
+                                                        }
+                                                    });
+                                                }
+                                            %>
+                                            <%= deliveredCount %>
+                                        </h2>
+                                    </div>
+                                    <div class="bg-success p-3 rounded">
+                                        <i class="fas fa-box-open text-white fa-2x"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Thank You Modal -->
+<div class="modal fade" id="thankYouModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Send Thank You Note</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="thankYouForm">
+                    <input type="hidden" id="donationId">
+                    <div class="mb-3">
+                        <label for="thankYouMessage" class="form-label">Message</label>
+                        <textarea class="form-control" id="thankYouMessage" rows="4" placeholder="Write a thank you message to the donor"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="sendThankYou">Send Message</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Update donation status
+        document.querySelectorAll('.update-donation').forEach(button => {
+            button.addEventListener('click', function() {
+                const donationId = this.getAttribute('data-id');
+                const status = this.getAttribute('data-status');
+                
+                if (confirm(`Are you sure you want to mark this donation as ${status}?`)) {
+                    fetch(`/charity/donations/${donationId}/status`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ status })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            alert('Donation status updated successfully');
+                            location.reload();
+                        } else {
+                            alert(data.message || 'An error occurred');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('An error occurred while updating donation status');
+                    });
+                }
+            });
+        });
+        
+        // Send thank you note
+        const thankYouModal = new bootstrap.Modal(document.getElementById('thankYouModal'));
+        
+        document.querySelectorAll('.send-thank-you').forEach(button => {
+            button.addEventListener('click', function() {
+                const donationId = this.getAttribute('data-id');
+                const donorName = this.getAttribute('data-donor');
+                
+                document.getElementById('donationId').value = donationId;
+                document.getElementById('thankYouMessage').value = `Dear ${donorName},\n\nThank you for your generous donation. Your support means a lot to us and helps us continue our mission.\n\nSincerely,\n<%= charity.name %>`;
+                
+                thankYouModal.show();
+            });
+        });
+        
+        document.getElementById('sendThankYou').addEventListener('click', function() {
+            const donationId = document.getElementById('donationId').value;
+            const message = document.getElementById('thankYouMessage').value;
+            
+            if (!message.trim()) {
+                alert('Please enter a thank you message');
+                return;
+            }
+            
+            fetch(`/charity/donations/${donationId}/thank-you`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ message })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Thank you note sent successfully');
+                    thankYouModal.hide();
+                } else {
+                    alert(data.message || 'An error occurred');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred while sending thank you note');
+            });
+        });
+    });
+</script>
+
+<%- include('../partials/footer') %>

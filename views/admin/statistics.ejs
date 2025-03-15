@@ -1,0 +1,257 @@
+<%- include('../partials/header') %>
+
+<div class="row mb-4">
+    <div class="col-md-12">
+        <h1 class="mb-3">System Statistics</h1>
+        <p class="text-muted">Overview of system activities and metrics.</p>
+    </div>
+</div>
+
+<!-- Stats Cards -->
+<div class="row mb-4">
+    <div class="col-md-3 mb-3">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-muted mb-1">Total Users</h6>
+                        <h2 class="mb-0"><%= stats.totalUsers %></h2>
+                    </div>
+                    <div class="bg-primary p-3 rounded">
+                        <i class="fas fa-users text-white fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-muted mb-1">Active Charities</h6>
+                        <h2 class="mb-0"><%= stats.totalCharities %></h2>
+                    </div>
+                    <div class="bg-success p-3 rounded">
+                        <i class="fas fa-building text-white fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-muted mb-1">Total Requests</h6>
+                        <h2 class="mb-0"><%= stats.totalRequests %></h2>
+                    </div>
+                    <div class="bg-info p-3 rounded">
+                        <i class="fas fa-list-alt text-white fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-muted mb-1">Total Donations</h6>
+                        <h2 class="mb-0"><%= stats.totalDonations %></h2>
+                    </div>
+                    <div class="bg-danger p-3 rounded">
+                        <i class="fas fa-gift text-white fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Request & Donation Status -->
+<div class="row mb-4">
+    <div class="col-md-6 mb-3">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">Request Status</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="requestChart" height="200"></canvas>
+                <div class="row mt-3 text-center">
+                    <div class="col-4">
+                        <h5 class="mb-0 text-warning"><%= stats.pendingRequests %></h5>
+                        <small class="text-muted">Pending</small>
+                    </div>
+                    <div class="col-4">
+                        <h5 class="mb-0 text-success"><%= stats.fulfilledRequests %></h5>
+                        <small class="text-muted">Fulfilled</small>
+                    </div>
+                    <div class="col-4">
+                        <h5 class="mb-0 text-secondary"><%= stats.totalRequests - stats.pendingRequests - stats.fulfilledRequests %></h5>
+                        <small class="text-muted">Cancelled</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 mb-3">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">Donation Status</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="donationChart" height="200"></canvas>
+                <div class="row mt-3 text-center">
+                    <div class="col-4">
+                        <h5 class="mb-0 text-warning"><%= stats.pendingDonations %></h5>
+                        <small class="text-muted">Pending</small>
+                    </div>
+                    <div class="col-4">
+                        <h5 class="mb-0 text-success"><%= stats.deliveredDonations %></h5>
+                        <small class="text-muted">Delivered</small>
+                    </div>
+                    <div class="col-4">
+                        <h5 class="mb-0 text-secondary"><%= stats.totalDonations - stats.pendingDonations - stats.deliveredDonations %></h5>
+                        <small class="text-muted">Cancelled</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Top Categories -->
+<div class="row">
+    <div class="col-md-12">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">Top Categories by Request Count</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="categoryChart" height="300"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Include Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Prepare data for charts
+        const requestData = {
+            pending: <%= stats.pendingRequests %>,
+            fulfilled: <%= stats.fulfilledRequests %>,
+            cancelled: <%= stats.totalRequests - stats.pendingRequests - stats.fulfilledRequests %>
+        };
+        
+        const donationData = {
+            pending: <%= stats.pendingDonations %>,
+            delivered: <%= stats.deliveredDonations %>,
+            cancelled: <%= stats.totalDonations - stats.pendingDonations - stats.deliveredDonations %>
+        };
+        
+        // Category data
+        const categoryNames = [];
+        const categoryRequestCounts = [];
+        
+        <% categoryData.slice(0, 10).forEach(function(category) { %>
+            categoryNames.push('<%= category.name %>');
+            categoryRequestCounts.push(<%= category.requestCount %>);
+        <% }); %>
+        
+        // Request Status Chart
+        const requestCtx = document.getElementById('requestChart').getContext('2d');
+        const requestChart = new Chart(requestCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Pending', 'Fulfilled', 'Cancelled'],
+                datasets: [{
+                    data: [requestData.pending, requestData.fulfilled, requestData.cancelled],
+                    backgroundColor: [
+                        '#ffc107',
+                        '#28a745',
+                        '#6c757d'
+                    ],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    }
+                },
+                cutout: '70%'
+            }
+        });
+        
+        // Donation Status Chart
+        const donationCtx = document.getElementById('donationChart').getContext('2d');
+        const donationChart = new Chart(donationCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Pending', 'Delivered', 'Cancelled'],
+                datasets: [{
+                    data: [donationData.pending, donationData.delivered, donationData.cancelled],
+                    backgroundColor: [
+                        '#ffc107',
+                        '#28a745',
+                        '#6c757d'
+                    ],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    }
+                },
+                cutout: '70%'
+            }
+        });
+        
+        // Category Chart
+        const categoryCtx = document.getElementById('categoryChart').getContext('2d');
+        const categoryChart = new Chart(categoryCtx, {
+            type: 'bar',
+            data: {
+                labels: categoryNames,
+                datasets: [{
+                    label: 'Request Count',
+                    data: categoryRequestCounts,
+                    backgroundColor: '#007bff',
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            precision: 0
+                        }
+                    }
+                }
+            }
+        });
+    });
+</script>
+
+<%- include('../partials/footer') %>

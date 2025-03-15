@@ -1,0 +1,204 @@
+<%- include('../partials/header') %>
+
+<div class="row mb-4">
+    <div class="col-md-12">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/donor/dashboard">Dashboard</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Browse Donation Requests</li>
+            </ol>
+        </nav>
+        <h1 class="mb-3">Browse Donation Requests</h1>
+        <p class="text-muted">Find donation opportunities and help charities in need.</p>
+    </div>
+</div>
+
+<!-- Filters -->
+<div class="row mb-4">
+    <div class="col-md-12">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body">
+                <form action="/donor/browse" method="GET" class="row g-3">
+                    <div class="col-md-3">
+                        <label for="category" class="form-label">Category</label>
+                        <select name="category" id="category" class="form-select">
+                            <option value="">All Categories</option>
+                            <% categories.forEach(function(category) { %>
+                                <option value="<%= category.id %>" <%= filters.category == category.id ? 'selected' : '' %>><%= category.name %></option>
+                            <% }); %>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="charity" class="form-label">Charity</label>
+                        <select name="charity" id="charity" class="form-select">
+                            <option value="">All Charities</option>
+                            <% charities.forEach(function(charity) { %>
+                                <option value="<%= charity.id %>" <%= filters.charity == charity.id ? 'selected' : '' %>><%= charity.name %></option>
+                            <% }); %>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="request_type" class="form-label">Request Type</label>
+                        <select name="request_type" id="request_type" class="form-select">
+                            <option value="">All Types</option>
+                            <option value="drop-off" <%= filters.request_type === 'drop-off' ? 'selected' : '' %>>Drop-off Only</option>
+                            <option value="pickup" <%= filters.request_type === 'pickup' ? 'selected' : '' %>>Pickup Available</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="search" class="form-label">Search</label>
+                        <input type="text" name="search" id="search" class="form-control" placeholder="Search charities" value="<%= filters.search || '' %>">
+                    </div>
+                    <div class="col-12 d-flex justify-content-end">
+                        <button type="submit" class="btn btn-primary">Apply Filters</button>
+                        <a href="/donor/browse" class="btn btn-outline-secondary ms-2">Clear Filters</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Requests Grid -->
+<div class="row">
+    <div class="col-md-12">
+        <% if (requests && requests.length > 0) { %>
+            <div class="row g-4">
+                <% requests.forEach(function(request) { %>
+                    <div class="col-md-6 col-lg-4">
+                        <div class="card h-100 border-0 shadow-sm">
+                            <% if (request.image_url) { %>
+                                <img src="<%= request.image_url %>" class="card-img-top" alt="<%= request.item.name %>" style="height: 200px; object-fit: cover;">
+                            <% } else { %>
+                                <div class="bg-light text-center py-5">
+                                    <i class="fas fa-box fa-4x text-muted"></i>
+                                </div>
+                            <% } %>
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-start mb-3">
+                                    <h5 class="card-title mb-0"><%= request.item.name %></h5>
+                                    <span class="badge bg-primary"><%= request.item.category ? request.item.category.name : 'N/A' %></span>
+                                </div>
+                                <h6 class="text-muted mb-3">
+                                    <a href="/donor/charities/<%= request.charity.id %>" class="text-decoration-none">
+                                        <i class="fas fa-building me-1"></i> <%= request.charity.name %>
+                                    </a>
+                                </h6>
+                                <p class="card-text">
+                                    <strong>Quantity Needed:</strong> <%= request.quantity %> <%= request.item.unit %>(s)<br>
+                                    <strong>Type:</strong> <%= request.request_type === 'pickup' ? 'Pickup Available' : 'Drop-off Only' %><br>
+                                    <strong>Available Until:</strong> <%= new Date(request.available_times).toLocaleDateString() %>
+                                </p>
+                                
+                                <% 
+                                    // Calculate progress if any donations exist
+                                    let totalDonated = 0;
+                                    if (request.donations && request.donations.length > 0) {
+                                        request.donations.forEach(function(donation) {
+                                            if (donation.status !== 'Cancelled') {
+                                                totalDonated += donation.quantity;
+                                            }
+                                        });
+                                    }
+                                    const progressPercentage = Math.min(100, Math.round((totalDonated / request.quantity) * 100));
+                                %>
+                                
+                                <div class="progress mb-3" style="height: 10px;">
+                                    <div class="progress-bar <%= progressPercentage === 100 ? 'bg-success' : 'bg-primary' %>" role="progressbar" style="width: <%= progressPercentage %>%;" aria-valuenow="<%= progressPercentage %>" aria-valuemin="0" aria-valuemax="100"></div>
+                                </div>
+                                <p class="small text-muted text-center">
+                                    <%= totalDonated %> of <%= request.quantity %> <%= request.item.unit %>(s) donated (<%= progressPercentage %>%)
+                                </p>
+                            </div>
+                            <div class="card-footer bg-white border-0">
+                                <a href="/donor/requests/<%= request.id %>" class="btn btn-primary w-100">View Details</a>
+                            </div>
+                        </div>
+                    </div>
+                <% }); %>
+            </div>
+        <% } else { %>
+            <div class="card border-0 shadow-sm">
+                <div class="card-body text-center py-5">
+                    <i class="fas fa-search fa-3x text-muted mb-3"></i>
+                    <h4>No donation requests found</h4>
+                    <p class="text-muted">No requests match your current filters. Try adjusting your search criteria.</p>
+                    <a href="/donor/browse" class="btn btn-primary mt-3">Clear Filters</a>
+                </div>
+            </div>
+        <% } %>
+    </div>
+</div>
+
+<!-- Category Shortcuts -->
+<div class="row mt-5">
+    <div class="col-md-12">
+        <h4 class="mb-4">Browse by Category</h4>
+        <div class="row g-4">
+            <% categories.slice(0, 6).forEach(function(category) { %>
+                <div class="col-6 col-md-4 col-lg-2">
+                    <a href="/donor/browse?category=<%= category.id %>" class="text-decoration-none">
+                        <div class="card h-100 border-0 shadow-sm text-center">
+                            <div class="card-body">
+                                <% 
+                                    let iconClass = 'fa-box';
+                                    
+                                    // Map category names to Font Awesome icons
+                                    const categoryIcons = {
+                                        'Food': 'fa-utensils',
+                                        'Clothing': 'fa-tshirt',
+                                        'Hygiene': 'fa-pump-soap',
+                                        'Medical': 'fa-medkit',
+                                        'Education': 'fa-book',
+                                        'Furniture': 'fa-couch',
+                                        'Baby': 'fa-baby',
+                                        'Electronics': 'fa-laptop',
+                                        'Toys': 'fa-gamepad',
+                                        'Tools': 'fa-tools',
+                                        'Pet Supplies': 'fa-paw'
+                                    };
+                                    
+                                    if (categoryIcons[category.name]) {
+                                        iconClass = categoryIcons[category.name];
+                                    }
+                                %>
+                                <i class="fas <%= iconClass %> fa-2x text-primary mb-3"></i>
+                                <h6 class="mb-0"><%= category.name %></h6>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+            <% }); %>
+        </div>
+    </div>
+</div>
+
+<!-- Charity Spotlight -->
+<div class="row mt-5 mb-4">
+    <div class="col-md-12">
+        <h4 class="mb-4">Charity Spotlight</h4>
+        <div class="row g-4">
+            <% charities.slice(0, 3).forEach(function(charity) { %>
+                <div class="col-md-4">
+                    <div class="card h-100 border-0 shadow-sm">
+                        <div class="card-body">
+                            <h5 class="card-title"><%= charity.name %></h5>
+                            <p class="card-text text-muted">
+                                <% if (charity.description) { %>
+                                    <%= charity.description.length > 150 ? charity.description.substring(0, 150) + '...' : charity.description %>
+                                <% } else { %>
+                                    A charity organization helping the community.
+                                <% } %>
+                            </p>
+                        </div>
+                        <div class="card-footer bg-white border-0">
+                            <a href="/donor/charities/<%= charity.id %>" class="btn btn-outline-primary w-100">View Charity</a>
+                        </div>
+                    </div>
+                </div>
+            <% }); %>
+        </div>
+    </div>
+</div>
+
+<%- include('../partials/footer') %>

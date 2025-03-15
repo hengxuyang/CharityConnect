@@ -1,0 +1,271 @@
+<%- include('../partials/header') %>
+
+<div class="row mb-4">
+    <div class="col-md-12">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/donor/dashboard">Dashboard</a></li>
+                <li class="breadcrumb-item active" aria-current="page">My Donations</li>
+            </ol>
+        </nav>
+        <h1 class="mb-3">My Donations</h1>
+        <p class="text-muted">Track and manage your donation commitments.</p>
+    </div>
+</div>
+
+<!-- Filters -->
+<div class="row mb-4">
+    <div class="col-md-12">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body">
+                <form action="/donor/my-donations" method="GET" class="row g-3">
+                    <div class="col-md-4">
+                        <label for="status" class="form-label">Status</label>
+                        <select name="status" id="status" class="form-select">
+                            <option value="">All Statuses</option>
+                            <option value="Pending" <%= filters.status === 'Pending' ? 'selected' : '' %>>Pending</option>
+                            <option value="Delivered" <%= filters.status === 'Delivered' ? 'selected' : '' %>>Delivered</option>
+                            <option value="Cancelled" <%= filters.status === 'Cancelled' ? 'selected' : '' %>>Cancelled</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4 d-flex align-items-end">
+                        <button type="submit" class="btn btn-primary w-100">Filter</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Donations List -->
+<div class="row">
+    <div class="col-md-12">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body">
+                <% if (donations && donations.length > 0) { %>
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Charity</th>
+                                    <th>Item</th>
+                                    <th>Quantity</th>
+                                    <th>Request Type</th>
+                                    <th>Status</th>
+                                    <th>Date</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <% donations.forEach(function(donation) { %>
+                                    <tr>
+                                        <td>
+                                            <a href="/donor/charities/<%= donation.request.charity.id %>" class="text-decoration-none">
+                                                <%= donation.request.charity.name %>
+                                            </a>
+                                        </td>
+                                        <td><%= donation.request.item.name %></td>
+                                        <td><%= donation.quantity %> <%= donation.request.item.unit %>(s)</td>
+                                        <td><%= donation.request.request_type === 'pickup' ? 'Pickup' : 'Drop-off' %></td>
+                                        <td>
+                                            <span class="badge <%= donation.status === 'Pending' ? 'bg-warning' : (donation.status === 'Delivered' ? 'bg-success' : 'bg-secondary') %>">
+                                                <%= donation.status %>
+                                            </span>
+                                        </td>
+                                        <td><%= new Date(donation.created_at).toLocaleDateString() %></td>
+                                        <td>
+                                            <div class="btn-group">
+                                                <a href="/donor/requests/<%= donation.request.id %>" class="btn btn-sm btn-primary">
+                                                    <i class="fas fa-eye"></i> View Request
+                                                </a>
+                                                <% if (donation.status === 'Pending') { %>
+                                                    <button class="btn btn-sm btn-danger cancel-donation" data-id="<%= donation.id %>">
+                                                        <i class="fas fa-times"></i> Cancel
+                                                    </button>
+                                                <% } %>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                <% }); %>
+                            </tbody>
+                        </table>
+                    </div>
+                <% } else { %>
+                    <div class="text-center py-5">
+                        <i class="fas fa-gift fa-3x text-muted mb-3"></i>
+                        <h5>No donations found</h5>
+                        <p class="text-muted">You haven't made any donations yet or no donations match your current filters.</p>
+                        <a href="/donor/browse" class="btn btn-primary mt-3">Browse Donation Requests</a>
+                    </div>
+                <% } %>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Donation Statistics -->
+<div class="row mt-4">
+    <div class="col-md-12">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">Donation Statistics</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <div class="card border-0 shadow-sm h-100">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="text-muted mb-1">Total Donations</h6>
+                                        <h2 class="mb-0"><%= donations ? donations.length : 0 %></h2>
+                                    </div>
+                                    <div class="bg-primary p-3 rounded">
+                                        <i class="fas fa-gift text-white fa-2x"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <div class="card border-0 shadow-sm h-100">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="text-muted mb-1">Pending Donations</h6>
+                                        <h2 class="mb-0">
+                                            <% 
+                                                let pendingCount = 0;
+                                                if (donations && donations.length > 0) {
+                                                    donations.forEach(function(donation) {
+                                                        if (donation.status === 'Pending') {
+                                                            pendingCount++;
+                                                        }
+                                                    });
+                                                }
+                                            %>
+                                            <%= pendingCount %>
+                                        </h2>
+                                    </div>
+                                    <div class="bg-warning p-3 rounded">
+                                        <i class="fas fa-hourglass-half text-white fa-2x"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <div class="card border-0 shadow-sm h-100">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="text-muted mb-1">Delivered Donations</h6>
+                                        <h2 class="mb-0">
+                                            <% 
+                                                let deliveredCount = 0;
+                                                if (donations && donations.length > 0) {
+                                                    donations.forEach(function(donation) {
+                                                        if (donation.status === 'Delivered') {
+                                                            deliveredCount++;
+                                                        }
+                                                    });
+                                                }
+                                            %>
+                                            <%= deliveredCount %>
+                                        </h2>
+                                    </div>
+                                    <div class="bg-success p-3 rounded">
+                                        <i class="fas fa-check-circle text-white fa-2x"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Donation Tips -->
+<div class="row mt-4">
+    <div class="col-md-12">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">Donation Tips</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4 mb-3 mb-md-0">
+                        <div class="d-flex">
+                            <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 40px; height: 40px; flex-shrink: 0;">
+                                <i class="fas fa-calendar-check"></i>
+                            </div>
+                            <div>
+                                <h6>Schedule Your Donations</h6>
+                                <p class="text-muted mb-0 small">Plan ahead and schedule your donations to ensure timely delivery.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-3 mb-md-0">
+                        <div class="d-flex">
+                            <div class="bg-success text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 40px; height: 40px; flex-shrink: 0;">
+                                <i class="fas fa-box"></i>
+                            </div>
+                            <div>
+                                <h6>Package Items Properly</h6>
+                                <p class="text-muted mb-0 small">Ensure items are clean, functional, and properly packaged for delivery.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="d-flex">
+                            <div class="bg-info text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 40px; height: 40px; flex-shrink: 0;">
+                                <i class="fas fa-phone"></i>
+                            </div>
+                            <div>
+                                <h6>Contact the Charity</h6>
+                                <p class="text-muted mb-0 small">If you have questions about a donation, don't hesitate to contact the charity directly.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Cancel donation
+        document.querySelectorAll('.cancel-donation').forEach(button => {
+            button.addEventListener('click', function() {
+                const donationId = this.getAttribute('data-id');
+                
+                if (confirm('Are you sure you want to cancel this donation? This action cannot be undone.')) {
+                    fetch(`/donor/donations/${donationId}/cancel`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            alert('Donation cancelled successfully');
+                            location.reload();
+                        } else {
+                            alert(data.message || 'An error occurred');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('An error occurred while cancelling the donation');
+                    });
+                }
+            });
+        });
+    });
+</script>
+
+<%- include('../partials/footer') %>

@@ -1,0 +1,423 @@
+<%- include('../partials/header') %>
+
+<div class="row mb-4">
+    <div class="col-md-12">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/charity/dashboard">Dashboard</a></li>
+                <li class="breadcrumb-item"><a href="/charity/requests">Donation Requests</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Request Details</li>
+            </ol>
+        </nav>
+        <div class="d-flex justify-content-between align-items-center">
+            <h1 class="mb-0">Request Details</h1>
+            <div>
+                <% if (request.status === 'Pending') { %>
+                    <button class="btn btn-danger cancel-request" data-id="<%= request.id %>">
+                        <i class="fas fa-times me-1"></i> Cancel Request
+                    </button>
+                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#editRequestModal">
+                        <i class="fas fa-edit me-1"></i> Edit Request
+                    </button>
+                <% } %>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Request Information -->
+    <div class="col-md-8 mb-4">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">Request Information</h5>
+            </div>
+            <div class="card-body">
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <h6 class="text-muted mb-1">Item</h6>
+                        <p class="mb-0 fs-5"><%= request.item.name %></p>
+                    </div>
+                    <div class="col-md-6">
+                        <h6 class="text-muted mb-1">Category</h6>
+                        <p class="mb-0"><%= request.item.category ? request.item.category.name : 'N/A' %></p>
+                    </div>
+                </div>
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <h6 class="text-muted mb-1">Quantity Needed</h6>
+                        <p class="mb-0"><%= request.quantity %> <%= request.item.unit %>(s)</p>
+                    </div>
+                    <div class="col-md-6">
+                        <h6 class="text-muted mb-1">Status</h6>
+                        <span class="badge <%= request.status === 'Pending' ? 'bg-warning' : (request.status === 'Fulfilled' ? 'bg-success' : 'bg-secondary') %> fs-6">
+                            <%= request.status %>
+                        </span>
+                    </div>
+                </div>
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <h6 class="text-muted mb-1">Request Type</h6>
+                        <p class="mb-0"><%= request.request_type === 'pickup' ? 'Allow Pickup' : 'Drop-off Only' %></p>
+                    </div>
+                    <div class="col-md-6">
+                        <h6 class="text-muted mb-1">Available Until</h6>
+                        <p class="mb-0"><%= new Date(request.available_times).toLocaleDateString() %></p>
+                    </div>
+                </div>
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <h6 class="text-muted mb-1">Drop-off Address</h6>
+                        <p class="mb-0"><%= request.drop_off_address %></p>
+                    </div>
+                </div>
+                <% if (request.notes) { %>
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <h6 class="text-muted mb-1">Notes</h6>
+                            <p class="mb-0"><%= request.notes %></p>
+                        </div>
+                    </div>
+                <% } %>
+                <div class="row">
+                    <div class="col-12">
+                        <h6 class="text-muted mb-1">Date Created</h6>
+                        <p class="mb-0"><%= new Date(request.created_at).toLocaleDateString() %></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Donation Progress -->
+    <div class="col-md-4 mb-4">
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">Donation Progress</h5>
+            </div>
+            <div class="card-body">
+                <% 
+                    let totalDonated = 0;
+                    if (donations && donations.length > 0) {
+                        donations.forEach(function(donation) {
+                            if (donation.status !== 'Cancelled') {
+                                totalDonated += donation.quantity;
+                            }
+                        });
+                    }
+                    const progressPercentage = Math.min(100, Math.round((totalDonated / request.quantity) * 100));
+                %>
+                <div class="text-center mb-3">
+                    <h2 class="mb-0"><%= totalDonated %> / <%= request.quantity %></h2>
+                    <p class="text-muted"><%= request.item.unit %>(s) donated</p>
+                </div>
+                <div class="progress mb-3" style="height: 20px;">
+                    <div class="progress-bar <%= progressPercentage === 100 ? 'bg-success' : 'bg-primary' %>" role="progressbar" style="width: <%= progressPercentage %>%;" aria-valuenow="<%= progressPercentage %>" aria-valuemin="0" aria-valuemax="100"><%= progressPercentage %>%</div>
+                </div>
+                <div class="text-center">
+                    <% if (progressPercentage === 100) { %>
+                        <p class="text-success mb-0"><i class="fas fa-check-circle me-1"></i> Request fulfilled!</p>
+                    <% } else { %>
+                        <p class="text-muted mb-0">Need <%= request.quantity - totalDonated %> more <%= request.item.unit %>(s)</p>
+                    <% } %>
+                </div>
+            </div>
+        </div>
+
+        <!-- Request Image -->
+        <% if (request.image_url) { %>
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">Request Image</h5>
+                </div>
+                <div class="card-body p-0">
+                    <img src="<%= request.image_url %>" alt="<%= request.item.name %>" class="img-fluid">
+                </div>
+            </div>
+        <% } %>
+    </div>
+</div>
+
+<!-- Donations List -->
+<div class="row">
+    <div class="col-md-12">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">Donations</h5>
+            </div>
+            <div class="card-body">
+                <% if (donations && donations.length > 0) { %>
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Donor</th>
+                                    <th>Quantity</th>
+                                    <th>Status</th>
+                                    <th>Date</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <% donations.forEach(function(donation) { %>
+                                    <tr>
+                                        <td><%= donation.donor.name %></td>
+                                        <td><%= donation.quantity %> <%= request.item.unit %>(s)</td>
+                                        <td>
+                                            <span class="badge <%= donation.status === 'Pending' ? 'bg-warning' : (donation.status === 'Delivered' ? 'bg-success' : 'bg-secondary') %>">
+                                                <%= donation.status %>
+                                            </span>
+                                        </td>
+                                        <td><%= new Date(donation.created_at).toLocaleDateString() %></td>
+                                        <td>
+                                            <% if (donation.status === 'Pending') { %>
+                                                <button class="btn btn-sm btn-success update-donation" data-id="<%= donation.id %>" data-status="Delivered">
+                                                    <i class="fas fa-check"></i> Mark Delivered
+                                                </button>
+                                            <% } else if (donation.status === 'Delivered') { %>
+                                                <button class="btn btn-sm btn-info send-thank-you" data-id="<%= donation.id %>" data-donor="<%= donation.donor.name %>">
+                                                    <i class="fas fa-envelope"></i> Thank You
+                                                </button>
+                                            <% } %>
+                                        </td>
+                                    </tr>
+                                <% }); %>
+                            </tbody>
+                        </table>
+                    </div>
+                <% } else { %>
+                    <p class="text-muted mb-0">No donations have been made for this request yet.</p>
+                <% } %>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Request Modal -->
+<div class="modal fade" id="editRequestModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Edit Request</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="editRequestForm">
+                    <div class="mb-3">
+                        <label for="editQuantity" class="form-label">Quantity Needed</label>
+                        <div class="input-group">
+                            <input type="number" class="form-control" id="editQuantity" name="quantity" min="<%= totalDonated %>" value="<%= request.quantity %>" required>
+                            <span class="input-group-text"><%= request.item.unit %>(s)</span>
+                        </div>
+                        <div class="form-text">
+                            Quantity cannot be less than the amount already donated (<%= totalDonated %>).
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="editRequestType" class="form-label">Request Type</label>
+                        <select class="form-select" id="editRequestType" name="request_type" required>
+                            <option value="drop-off" <%= request.request_type === 'drop-off' ? 'selected' : '' %>>Drop-off Only</option>
+                            <option value="pickup" <%= request.request_type === 'pickup' ? 'selected' : '' %>>Allow Pickup</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="editAvailableTimes" class="form-label">Available Until</label>
+                        <input type="date" class="form-control" id="editAvailableTimes" name="available_times" value="<%= new Date(request.available_times).toISOString().split('T')[0] %>" required min="<%= new Date().toISOString().split('T')[0] %>">
+                    </div>
+                    <div class="mb-3">
+                        <label for="editDropOffAddress" class="form-label">Drop-off Address</label>
+                        <textarea class="form-control" id="editDropOffAddress" name="drop_off_address" rows="3" required><%= request.drop_off_address %></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="editNotes" class="form-label">Notes (Optional)</label>
+                        <textarea class="form-control" id="editNotes" name="notes" rows="3"><%= request.notes || '' %></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="saveRequestChanges">Save Changes</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Thank You Modal -->
+<div class="modal fade" id="thankYouModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Send Thank You Note</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="thankYouForm">
+                    <input type="hidden" id="donationId">
+                    <div class="mb-3">
+                        <label for="thankYouMessage" class="form-label">Message</label>
+                        <textarea class="form-control" id="thankYouMessage" rows="4" placeholder="Write a thank you message to the donor"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="sendThankYou">Send Message</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Cancel request
+        document.querySelector('.cancel-request')?.addEventListener('click', function() {
+            const requestId = this.getAttribute('data-id');
+            
+            if (confirm('Are you sure you want to cancel this request? This action cannot be undone.')) {
+                fetch(`/charity/requests/${requestId}/cancel`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('Request cancelled successfully');
+                        location.reload();
+                    } else {
+                        alert(data.message || 'An error occurred');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('An error occurred while cancelling the request');
+                });
+            }
+        });
+        
+        // Update request
+        document.getElementById('saveRequestChanges')?.addEventListener('click', function() {
+            const quantity = document.getElementById('editQuantity').value;
+            const requestType = document.getElementById('editRequestType').value;
+            const availableTimes = document.getElementById('editAvailableTimes').value;
+            const dropOffAddress = document.getElementById('editDropOffAddress').value;
+            const notes = document.getElementById('editNotes').value;
+            
+            if (!quantity || !requestType || !availableTimes || !dropOffAddress) {
+                alert('Please fill in all required fields');
+                return;
+            }
+            
+            fetch(`/charity/requests/<%= request.id %>`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    quantity,
+                    request_type: requestType,
+                    available_times: availableTimes,
+                    drop_off_address: dropOffAddress,
+                    notes
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Request updated successfully');
+                    location.reload();
+                } else {
+                    alert(data.message || 'An error occurred');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred while updating the request');
+            });
+            
+            // Close modal
+            const modal = bootstrap.Modal.getInstance(document.getElementById('editRequestModal'));
+            modal.hide();
+        });
+        
+        // Update donation status
+        document.querySelectorAll('.update-donation').forEach(button => {
+            button.addEventListener('click', function() {
+                const donationId = this.getAttribute('data-id');
+                const status = this.getAttribute('data-status');
+                
+                if (confirm(`Are you sure you want to mark this donation as ${status}?`)) {
+                    fetch(`/charity/donations/${donationId}/status`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ status })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            alert('Donation status updated successfully');
+                            location.reload();
+                        } else {
+                            alert(data.message || 'An error occurred');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('An error occurred while updating donation status');
+                    });
+                }
+            });
+        });
+        
+        // Send thank you note
+        const thankYouModal = new bootstrap.Modal(document.getElementById('thankYouModal'));
+        
+        document.querySelectorAll('.send-thank-you').forEach(button => {
+            button.addEventListener('click', function() {
+                const donationId = this.getAttribute('data-id');
+                const donorName = this.getAttribute('data-donor');
+                
+                document.getElementById('donationId').value = donationId;
+                document.getElementById('thankYouMessage').value = `Dear ${donorName},\n\nThank you for your generous donation of <%= request.item.name %>. Your support means a lot to us and helps us continue our mission.\n\nSincerely,\n<%= charity.name %>`;
+                
+                thankYouModal.show();
+            });
+        });
+        
+        document.getElementById('sendThankYou').addEventListener('click', function() {
+            const donationId = document.getElementById('donationId').value;
+            const message = document.getElementById('thankYouMessage').value;
+            
+            if (!message.trim()) {
+                alert('Please enter a thank you message');
+                return;
+            }
+            
+            fetch(`/charity/donations/${donationId}/thank-you`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ message })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Thank you note sent successfully');
+                    thankYouModal.hide();
+                } else {
+                    alert(data.message || 'An error occurred');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred while sending thank you note');
+            });
+        });
+    });
+</script>
+
+<%- include('../partials/footer') %>

@@ -1,0 +1,212 @@
+<%- include('../partials/header') %>
+
+<div class="row mb-4">
+    <div class="col-md-12">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/charity/dashboard">Dashboard</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Charity Profile</li>
+            </ol>
+        </nav>
+        <h1 class="mb-3">Charity Profile</h1>
+        <p class="text-muted">Manage your charity's information and users.</p>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Charity Information -->
+    <div class="col-md-8 mb-4">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">Charity Information</h5>
+            </div>
+            <div class="card-body">
+                <form id="profileForm">
+                    <div class="mb-3">
+                        <label for="name" class="form-label">Charity Name</label>
+                        <input type="text" class="form-control" id="name" name="name" value="<%= charity.name %>" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="email" class="form-label">Email Address</label>
+                        <input type="email" class="form-control" id="email" value="<%= charity.email %>" readonly>
+                        <small class="text-muted">Email address cannot be changed. Contact admin for assistance.</small>
+                    </div>
+                    <div class="mb-3">
+                        <label for="phone" class="form-label">Phone Number</label>
+                        <input type="tel" class="form-control" id="phone" name="phone" value="<%= charity.phone %>" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="address" class="form-label">Address</label>
+                        <textarea class="form-control" id="address" name="address" rows="3" required><%= charity.address %></textarea>
+                        <small class="text-muted">This address will be used as the default drop-off location for donation requests.</small>
+                    </div>
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Description</label>
+                        <textarea class="form-control" id="description" name="description" rows="4"><%= charity.description || '' %></textarea>
+                        <small class="text-muted">Tell donors about your charity's mission and the impact of their donations.</small>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Status</label>
+                        <div>
+                            <span class="badge <%= charity.status === 'pending' ? 'bg-warning' : (charity.status === 'approved' ? 'bg-success' : 'bg-danger') %> fs-6">
+                                <%= charity.status.charAt(0).toUpperCase() + charity.status.slice(1) %>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary">Update Profile</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charity Users -->
+    <div class="col-md-4 mb-4">
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">Charity Users</h5>
+            </div>
+            <div class="card-body">
+                <% if (charityUsers && charityUsers.length > 0) { %>
+                    <div class="list-group list-group-flush">
+                        <% charityUsers.forEach(function(user) { %>
+                            <div class="list-group-item px-0">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="mb-1"><%= user.name %></h6>
+                                        <p class="text-muted mb-0 small"><%= user.email %></p>
+                                    </div>
+                                    <div>
+                                        <% if (user.email_verified) { %>
+                                            <span class="badge bg-success">Verified</span>
+                                        <% } else { %>
+                                            <span class="badge bg-warning">Pending</span>
+                                        <% } %>
+                                    </div>
+                                </div>
+                            </div>
+                        <% }); %>
+                    </div>
+                <% } else { %>
+                    <p class="text-muted mb-0">No users associated with this charity.</p>
+                <% } %>
+            </div>
+            <div class="card-footer bg-white">
+                <small class="text-muted">To add more users to your charity, they need to register with the same charity code.</small>
+            </div>
+        </div>
+
+        <!-- Change Password -->
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">Change Password</h5>
+            </div>
+            <div class="card-body">
+                <form id="passwordForm">
+                    <div class="mb-3">
+                        <label for="currentPassword" class="form-label">Current Password</label>
+                        <input type="password" class="form-control" id="currentPassword" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="newPassword" class="form-label">New Password</label>
+                        <input type="password" class="form-control" id="newPassword" required minlength="8">
+                    </div>
+                    <div class="mb-3">
+                        <label for="confirmPassword" class="form-label">Confirm New Password</label>
+                        <input type="password" class="form-control" id="confirmPassword" required minlength="8">
+                    </div>
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-secondary">Change Password</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Update profile
+        document.getElementById('profileForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const name = document.getElementById('name').value.trim();
+            const phone = document.getElementById('phone').value.trim();
+            const address = document.getElementById('address').value.trim();
+            const description = document.getElementById('description').value.trim();
+            
+            if (!name || !phone || !address) {
+                alert('Please fill in all required fields');
+                return;
+            }
+            
+            fetch('/charity/profile', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    name,
+                    phone,
+                    address,
+                    description
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Profile updated successfully');
+                    // Reload page to show updated info
+                    location.reload();
+                } else {
+                    alert(data.message || 'An error occurred');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred while updating profile');
+            });
+        });
+        
+        // Change password
+        document.getElementById('passwordForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const currentPassword = document.getElementById('currentPassword').value;
+            const newPassword = document.getElementById('newPassword').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            
+            if (newPassword !== confirmPassword) {
+                alert('New passwords do not match');
+                return;
+            }
+            
+            fetch('/donor/change-password', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    current_password: currentPassword,
+                    new_password: newPassword
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Password changed successfully');
+                    document.getElementById('passwordForm').reset();
+                } else {
+                    alert(data.message || 'An error occurred');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred while changing password');
+            });
+        });
+    });
+</script>
+
+<%- include('../partials/footer') %>

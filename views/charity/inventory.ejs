@@ -1,0 +1,311 @@
+<%- include('../partials/header') %>
+
+<div class="row mb-4">
+    <div class="col-md-12">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/charity/dashboard">Dashboard</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Inventory Management</li>
+            </ol>
+        </nav>
+        <div class="d-flex justify-content-between align-items-center">
+            <h1 class="mb-0">Inventory Management</h1>
+            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addInventoryModal">
+                <i class="fas fa-plus me-1"></i> Add/Update Item
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Filters -->
+<div class="row mb-4">
+    <div class="col-md-12">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body">
+                <form action="/charity/inventory" method="GET" class="row g-3">
+                    <div class="col-md-4">
+                        <label for="category" class="form-label">Category</label>
+                        <select name="category" id="category" class="form-select">
+                            <option value="">All Categories</option>
+                            <% categories.forEach(function(category) { %>
+                                <option value="<%= category.id %>" <%= filters.category == category.id ? 'selected' : '' %>><%= category.name %></option>
+                            <% }); %>
+                        </select>
+                    </div>
+                    <div class="col-md-4 d-flex align-items-end">
+                        <button type="submit" class="btn btn-primary w-100">Filter</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Inventory List -->
+<div class="row">
+    <div class="col-md-12">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body">
+                <% if (inventory && inventory.length > 0) { %>
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Item</th>
+                                    <th>Category</th>
+                                    <th>Current Stock</th>
+                                    <th>Status</th>
+                                    <th>Last Updated</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <% inventory.forEach(function(item) { %>
+                                    <tr>
+                                        <td><%= item.item.name %></td>
+                                        <td><%= item.item.category ? item.item.category.name : 'N/A' %></td>
+                                        <td><%= item.quantity %> <%= item.item.unit %>(s)</td>
+                                        <td>
+                                            <% if (item.quantity <= 5) { %>
+                                                <span class="badge bg-danger">Urgent Need</span>
+                                            <% } else if (item.quantity <= 10) { %>
+                                                <span class="badge bg-warning">Running Low</span>
+                                            <% } else { %>
+                                                <span class="badge bg-success">In Stock</span>
+                                            <% } %>
+                                        </td>
+                                        <td><%= new Date(item.last_updated).toLocaleDateString() %></td>
+                                        <td>
+                                            <div class="btn-group">
+                                                <button class="btn btn-sm btn-primary update-inventory" 
+                                                    data-item-id="<%= item.item.id %>" 
+                                                    data-item-name="<%= item.item.name %>" 
+                                                    data-quantity="<%= item.quantity %>"
+                                                    data-unit="<%= item.item.unit %>">
+                                                    <i class="fas fa-edit"></i> Update
+                                                </button>
+                                                <a href="/charity/requests/create?item=<%= item.item.id %>" class="btn btn-sm btn-success">
+                                                    <i class="fas fa-plus"></i> Request
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                <% }); %>
+                            </tbody>
+                        </table>
+                    </div>
+                <% } else { %>
+                    <div class="text-center py-5">
+                        <i class="fas fa-boxes fa-3x text-muted mb-3"></i>
+                        <h5>No inventory items found</h5>
+                        <p class="text-muted">No items match your current filters or you haven't added any items to your inventory yet.</p>
+                        <button class="btn btn-primary mt-3" data-bs-toggle="modal" data-bs-target="#addInventoryModal">
+                            <i class="fas fa-plus me-1"></i> Add Your First Item
+                        </button>
+                    </div>
+                <% } %>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add/Update Inventory Modal -->
+<div class="modal fade" id="addInventoryModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="inventoryModalTitle">Add/Update Inventory Item</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="inventoryForm">
+                    <div class="mb-3">
+                        <label for="itemSelect" class="form-label">Item</label>
+                        <select class="form-select" id="itemSelect" required>
+                            <option value="" selected disabled>Select an item</option>
+                            <% items.forEach(function(item) { %>
+                                <option value="<%= item.id %>" data-unit="<%= item.unit %>"><%= item.name %> (<%= item.category ? item.category.name : 'No Category' %>)</option>
+                            <% }); %>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="quantity" class="form-label">Quantity</label>
+                        <div class="input-group">
+                            <input type="number" class="form-control" id="quantity" min="0" required>
+                            <span class="input-group-text" id="unit-text">units</span>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="saveInventory">Save</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Inventory Stats -->
+<div class="row mt-4">
+    <div class="col-md-12">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">Inventory Statistics</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <div class="card border-0 shadow-sm h-100">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="text-muted mb-1">Total Items</h6>
+                                        <h2 class="mb-0"><%= inventory ? inventory.length : 0 %></h2>
+                                    </div>
+                                    <div class="bg-primary p-3 rounded">
+                                        <i class="fas fa-boxes text-white fa-2x"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <div class="card border-0 shadow-sm h-100">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="text-muted mb-1">Low Stock Items</h6>
+                                        <h2 class="mb-0">
+                                            <% 
+                                                let lowStockCount = 0;
+                                                if (inventory && inventory.length > 0) {
+                                                    inventory.forEach(function(item) {
+                                                        if (item.quantity <= 10) {
+                                                            lowStockCount++;
+                                                        }
+                                                    });
+                                                }
+                                            %>
+                                            <%= lowStockCount %>
+                                        </h2>
+                                    </div>
+                                    <div class="bg-warning p-3 rounded">
+                                        <i class="fas fa-exclamation-triangle text-white fa-2x"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <div class="card border-0 shadow-sm h-100">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="text-muted mb-1">Urgent Need Items</h6>
+                                        <h2 class="mb-0">
+                                            <% 
+                                                let urgentCount = 0;
+                                                if (inventory && inventory.length > 0) {
+                                                    inventory.forEach(function(item) {
+                                                        if (item.quantity <= 5) {
+                                                            urgentCount++;
+                                                        }
+                                                    });
+                                                }
+                                            %>
+                                            <%= urgentCount %>
+                                        </h2>
+                                    </div>
+                                    <div class="bg-danger p-3 rounded">
+                                        <i class="fas fa-exclamation-circle text-white fa-2x"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const itemSelect = document.getElementById('itemSelect');
+        const quantityInput = document.getElementById('quantity');
+        const unitText = document.getElementById('unit-text');
+        const inventoryModalTitle = document.getElementById('inventoryModalTitle');
+        const inventoryModal = new bootstrap.Modal(document.getElementById('addInventoryModal'));
+        
+        // Update unit text when item changes
+        itemSelect.addEventListener('change', function() {
+            const selectedOption = this.options[this.selectedIndex];
+            if (selectedOption && selectedOption.dataset.unit) {
+                unitText.textContent = selectedOption.dataset.unit + '(s)';
+            } else {
+                unitText.textContent = 'units';
+            }
+        });
+        
+        // Update inventory
+        document.querySelectorAll('.update-inventory').forEach(button => {
+            button.addEventListener('click', function() {
+                const itemId = this.getAttribute('data-item-id');
+                const itemName = this.getAttribute('data-item-name');
+                const quantity = this.getAttribute('data-quantity');
+                const unit = this.getAttribute('data-unit');
+                
+                // Set modal title
+                inventoryModalTitle.textContent = `Update Inventory: ${itemName}`;
+                
+                // Set form values
+                itemSelect.value = itemId;
+                quantityInput.value = quantity;
+                unitText.textContent = unit + '(s)';
+                
+                // Show modal
+                inventoryModal.show();
+            });
+        });
+        
+        // Save inventory
+        document.getElementById('saveInventory').addEventListener('click', function() {
+            const itemId = itemSelect.value;
+            const quantity = quantityInput.value;
+            
+            if (!itemId || !quantity) {
+                alert('Please fill in all required fields');
+                return;
+            }
+            
+            fetch('/charity/inventory', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    item_id: itemId,
+                    quantity: parseInt(quantity)
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Inventory updated successfully');
+                    location.reload();
+                } else {
+                    alert(data.message || 'An error occurred');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred while updating inventory');
+            });
+            
+            // Close modal
+            inventoryModal.hide();
+        });
+    });
+</script>
+
+<%- include('../partials/footer') %>

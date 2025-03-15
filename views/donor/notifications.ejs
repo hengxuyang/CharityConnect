@@ -1,0 +1,261 @@
+<%- include('../partials/header') %>
+
+<div class="row mb-4">
+    <div class="col-md-12">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/donor/dashboard">Dashboard</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Notifications</li>
+            </ol>
+        </nav>
+        <h1 class="mb-3">Notifications</h1>
+        <p class="text-muted">Stay updated with your donation activities and charity communications.</p>
+    </div>
+</div>
+
+<!-- Notifications List -->
+<div class="row">
+    <div class="col-md-12">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body">
+                <% if (notifications && notifications.length > 0) { %>
+                    <div class="list-group list-group-flush">
+                        <% notifications.forEach(function(notification) { %>
+                            <div class="list-group-item px-0 py-3 <%= notification.read ? '' : 'bg-light' %>">
+                                <div class="d-flex">
+                                    <div class="me-3">
+                                        <% if (notification.type === 'donation_update') { %>
+                                            <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                                <i class="fas fa-gift"></i>
+                                            </div>
+                                        <% } else if (notification.type === 'thank_you') { %>
+                                            <div class="bg-success text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                                <i class="fas fa-heart"></i>
+                                            </div>
+                                        <% } else { %>
+                                            <div class="bg-info text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                                <i class="fas fa-bell"></i>
+                                            </div>
+                                        <% } %>
+                                    </div>
+                                    <div class="flex-grow-1">
+                                        <div class="d-flex justify-content-between align-items-start">
+                                            <h6 class="mb-1 <%= notification.read ? '' : 'fw-bold' %>">
+                                                <%= notification.title %>
+                                            </h6>
+                                            <small class="text-muted"><%= new Date(notification.created_at).toLocaleDateString() %></small>
+                                        </div>
+                                        <p class="mb-1"><%= notification.message %></p>
+                                        <% if (notification.request_id || notification.donation_id) { %>
+                                            <div class="mt-2">
+                                                <% if (notification.request_id) { %>
+                                                    <a href="/donor/requests/<%= notification.request_id %>" class="btn btn-sm btn-outline-primary">
+                                                        <i class="fas fa-eye me-1"></i> View Request
+                                                    </a>
+                                                <% } %>
+                                                <% if (notification.donation_id) { %>
+                                                    <a href="/donor/my-donations" class="btn btn-sm btn-outline-primary">
+                                                        <i class="fas fa-gift me-1"></i> View Donation
+                                                    </a>
+                                                <% } %>
+                                                <% if (!notification.read) { %>
+                                                    <button class="btn btn-sm btn-outline-secondary mark-read" data-id="<%= notification.id %>">
+                                                        <i class="fas fa-check me-1"></i> Mark as Read
+                                                    </button>
+                                                <% } %>
+                                            </div>
+                                        <% } %>
+                                    </div>
+                                </div>
+                            </div>
+                        <% }); %>
+                    </div>
+                <% } else { %>
+                    <div class="text-center py-5">
+                        <i class="fas fa-bell fa-3x text-muted mb-3"></i>
+                        <h5>No notifications</h5>
+                        <p class="text-muted">You don't have any notifications at the moment.</p>
+                    </div>
+                <% } %>
+            </div>
+            <% if (notifications && notifications.length > 0) { %>
+                <div class="card-footer bg-white d-flex justify-content-between">
+                    <button class="btn btn-outline-primary" id="markAllRead">
+                        <i class="fas fa-check-double me-1"></i> Mark All as Read
+                    </button>
+                    <button class="btn btn-outline-danger" id="clearAll">
+                        <i class="fas fa-trash me-1"></i> Clear All Notifications
+                    </button>
+                </div>
+            <% } %>
+        </div>
+    </div>
+</div>
+
+<!-- Notification Settings -->
+<div class="row mt-4">
+    <div class="col-md-12">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">Notification Settings</h5>
+            </div>
+            <div class="card-body">
+                <form id="notificationSettingsForm">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="emailNotifications" checked>
+                                <label class="form-check-label" for="emailNotifications">Email Notifications</label>
+                                <div class="form-text">Receive notifications via email</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="pushNotifications" checked>
+                                <label class="form-check-label" for="pushNotifications">Push Notifications</label>
+                                <div class="form-text">Receive notifications in your browser</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="donationUpdates" checked>
+                                <label class="form-check-label" for="donationUpdates">Donation Updates</label>
+                                <div class="form-text">Updates about your donation status</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="thankYouMessages" checked>
+                                <label class="form-check-label" for="thankYouMessages">Thank You Messages</label>
+                                <div class="form-text">Messages from charities thanking you for donations</div>
+                            </div>
+                        </div>
+                        <div class="col-12 d-flex justify-content-end">
+                            <button type="submit" class="btn btn-primary">Save Settings</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Mark notification as read
+        document.querySelectorAll('.mark-read').forEach(button => {
+            button.addEventListener('click', function() {
+                const notificationId = this.getAttribute('data-id');
+                
+                fetch(`/donor/notifications/${notificationId}/read`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Update UI
+                        const listItem = this.closest('.list-group-item');
+                        listItem.classList.remove('bg-light');
+                        listItem.querySelector('h6').classList.remove('fw-bold');
+                        this.remove();
+                    } else {
+                        alert(data.message || 'An error occurred');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('An error occurred while marking notification as read');
+                });
+            });
+        });
+        
+        // Mark all as read
+        const markAllReadButton = document.getElementById('markAllRead');
+        if (markAllReadButton) {
+            markAllReadButton.addEventListener('click', function() {
+                fetch('/donor/notifications/mark-all-read', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        location.reload();
+                    } else {
+                        alert(data.message || 'An error occurred');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('An error occurred while marking all notifications as read');
+                });
+            });
+        }
+        
+        // Clear all notifications
+        const clearAllButton = document.getElementById('clearAll');
+        if (clearAllButton) {
+            clearAllButton.addEventListener('click', function() {
+                if (confirm('Are you sure you want to clear all notifications? This action cannot be undone.')) {
+                    fetch('/donor/notifications/clear-all', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            location.reload();
+                        } else {
+                            alert(data.message || 'An error occurred');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('An error occurred while clearing notifications');
+                    });
+                }
+            });
+        }
+        
+        // Save notification settings
+        document.getElementById('notificationSettingsForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const settings = {
+                email_notifications: document.getElementById('emailNotifications').checked,
+                push_notifications: document.getElementById('pushNotifications').checked,
+                donation_updates: document.getElementById('donationUpdates').checked,
+                thank_you_messages: document.getElementById('thankYouMessages').checked
+            };
+            
+            fetch('/donor/notification-settings', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(settings)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Notification settings saved successfully');
+                } else {
+                    alert(data.message || 'An error occurred');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred while saving notification settings');
+            });
+        });
+    });
+</script>
+
+<%- include('../partials/footer') %>
