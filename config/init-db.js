@@ -75,25 +75,259 @@ const initializeDatabase = async () => {
 
     // Create sample items
     const items = await Item.bulkCreate([
+      // Food items
       {
         id: uuidv4(),
         name: 'Canned Food',
-        category_id: 1, // Food
+        category_id: 1,
         unit: 'can',
         created_at: new Date()
       },
       {
         id: uuidv4(),
+        name: 'Rice',
+        category_id: 1,
+        unit: 'kg',
+        created_at: new Date()
+      },
+      {
+        id: uuidv4(),
+        name: 'Pasta',
+        category_id: 1,
+        unit: 'packet',
+        created_at: new Date()
+      },
+      {
+        id: uuidv4(),
+        name: 'Cooking Oil',
+        category_id: 1,
+        unit: 'bottle',
+        created_at: new Date()
+      },
+      {
+        id: uuidv4(),
+        name: 'Baby Formula',
+        category_id: 1,
+        unit: 'tin',
+        created_at: new Date()
+      },
+      
+      // Clothing items
+      {
+        id: uuidv4(),
         name: 'T-Shirts',
-        category_id: 2, // Clothing
+        category_id: 2,
         unit: 'piece',
         created_at: new Date()
       },
       {
         id: uuidv4(),
+        name: 'Jackets',
+        category_id: 2,
+        unit: 'piece',
+        created_at: new Date()
+      },
+      {
+        id: uuidv4(),
+        name: 'Pants',
+        category_id: 2,
+        unit: 'pair',
+        created_at: new Date()
+      },
+      {
+        id: uuidv4(),
+        name: 'Children\'s Clothing',
+        category_id: 2,
+        unit: 'set',
+        created_at: new Date()
+      },
+      {
+        id: uuidv4(),
+        name: 'Shoes',
+        category_id: 2,
+        unit: 'pair',
+        created_at: new Date()
+      },
+      
+      // Hygiene items
+      {
+        id: uuidv4(),
         name: 'Soap',
-        category_id: 3, // Hygiene
+        category_id: 3,
         unit: 'bar',
+        created_at: new Date()
+      },
+      {
+        id: uuidv4(),
+        name: 'Toothpaste',
+        category_id: 3,
+        unit: 'tube',
+        created_at: new Date()
+      },
+      {
+        id: uuidv4(),
+        name: 'Shampoo',
+        category_id: 3,
+        unit: 'bottle',
+        created_at: new Date()
+      },
+      {
+        id: uuidv4(),
+        name: 'Sanitary Pads',
+        category_id: 3,
+        unit: 'pack',
+        created_at: new Date()
+      },
+      {
+        id: uuidv4(),
+        name: 'Diapers',
+        category_id: 3,
+        unit: 'pack',
+        created_at: new Date()
+      },
+      
+      // Medical items
+      {
+        id: uuidv4(),
+        name: 'First Aid Kits',
+        category_id: 4,
+        unit: 'kit',
+        created_at: new Date()
+      },
+      {
+        id: uuidv4(),
+        name: 'Bandages',
+        category_id: 4,
+        unit: 'box',
+        created_at: new Date()
+      },
+      {
+        id: uuidv4(),
+        name: 'Vitamins',
+        category_id: 4,
+        unit: 'bottle',
+        created_at: new Date()
+      },
+      
+      // Education items
+      {
+        id: uuidv4(),
+        name: 'Notebooks',
+        category_id: 5,
+        unit: 'piece',
+        created_at: new Date()
+      },
+      {
+        id: uuidv4(),
+        name: 'Textbooks',
+        category_id: 5,
+        unit: 'piece',
+        created_at: new Date()
+      },
+      {
+        id: uuidv4(),
+        name: 'Stationery Sets',
+        category_id: 5,
+        unit: 'set',
+        created_at: new Date()
+      },
+      {
+        id: uuidv4(),
+        name: 'Backpacks',
+        category_id: 5,
+        unit: 'piece',
+        created_at: new Date()
+      },
+      
+      // Furniture items
+      {
+        id: uuidv4(),
+        name: 'Beds',
+        category_id: 6,
+        unit: 'piece',
+        created_at: new Date()
+      },
+      {
+        id: uuidv4(),
+        name: 'Tables',
+        category_id: 6,
+        unit: 'piece',
+        created_at: new Date()
+      },
+      {
+        id: uuidv4(),
+        name: 'Chairs',
+        category_id: 6,
+        unit: 'piece',
+        created_at: new Date()
+      },
+      
+      // Electronics items
+      {
+        id: uuidv4(),
+        name: 'Laptops',
+        category_id: 7,
+        unit: 'piece',
+        created_at: new Date()
+      },
+      {
+        id: uuidv4(),
+        name: 'Mobile Phones',
+        category_id: 7,
+        unit: 'piece',
+        created_at: new Date()
+      },
+      {
+        id: uuidv4(),
+        name: 'Tablets',
+        category_id: 7,
+        unit: 'piece',
+        created_at: new Date()
+      },
+      
+      // Toys items
+      {
+        id: uuidv4(),
+        name: 'Board Games',
+        category_id: 8,
+        unit: 'set',
+        created_at: new Date()
+      },
+      {
+        id: uuidv4(),
+        name: 'Stuffed Animals',
+        category_id: 8,
+        unit: 'piece',
+        created_at: new Date()
+      },
+      {
+        id: uuidv4(),
+        name: 'Educational Toys',
+        category_id: 8,
+        unit: 'set',
+        created_at: new Date()
+      },
+      
+      // Other items
+      {
+        id: uuidv4(),
+        name: 'Blankets',
+        category_id: 9,
+        unit: 'piece',
+        created_at: new Date()
+      },
+      {
+        id: uuidv4(),
+        name: 'Water Bottles',
+        category_id: 9,
+        unit: 'piece',
+        created_at: new Date()
+      },
+      {
+        id: uuidv4(),
+        name: 'Face Masks',
+        category_id: 9,
+        unit: 'box',
         created_at: new Date()
       }
     ]);
