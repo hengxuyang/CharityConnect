@@ -34,7 +34,7 @@
                             </div>
                             <div class="col-md-6">
                                 <label for="item_id" class="form-label">Item</label>
-                                <select class="form-select" id="item_id" name="item_id" required>
+                                <select class="form-select" id="item_id" name="item_id" required disabled>
                                     <option value="" selected disabled>Select a category first</option>
                                 </select>
                             </div>
@@ -107,28 +107,33 @@
     </div>
 </div>
 
+<!-- Hidden div to store category items data -->
+<div id="category-items-data" style="display: none;" 
+    data-items="<%= JSON.stringify(categories.map(category => ({
+        id: category.id,
+        items: (category.items || []).map(item => ({
+            id: item.id,
+            name: item.name,
+            unit: item.unit
+        }))
+    }))) %>">
+</div>
+
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         const categorySelect = document.getElementById('category');
         const itemSelect = document.getElementById('item_id');
         const unitText = document.getElementById('unit-text');
         
-        // Store all items by category
-        const itemsByCategory = {};
+        // Get items data from the hidden div
+        const categoriesDataElement = document.getElementById('category-items-data');
+        const categoriesData = JSON.parse(categoriesDataElement.dataset.items);
         
-        <% categories.forEach(function(category) { %>
-            itemsByCategory[<%= category.id %>] = [
-                <% if (category.items && category.items.length > 0) { %>
-                    <% category.items.forEach(function(item) { %>
-                        {
-                            id: <%= item.id %>,
-                            name: '<%= item.name %>',
-                            unit: '<%= item.unit %>'
-                        },
-                    <% }); %>
-                <% } %>
-            ];
-        <% }); %>
+        // Create a map of category ID to items
+        const itemsByCategory = {};
+        categoriesData.forEach(category => {
+            itemsByCategory[category.id] = category.items;
+        });
         
         // Update items when category changes
         categorySelect.addEventListener('change', function() {
@@ -163,6 +168,9 @@
                     itemSelect.appendChild(option);
                 });
             }
+            
+            // Enable the item select
+            itemSelect.disabled = false;
         });
         
         // Update unit text when item changes
@@ -185,7 +193,7 @@
             
             for (const categoryId in itemsByCategory) {
                 const items = itemsByCategory[categoryId];
-                const foundItem = items.find(item => item.id == itemParam);
+                const foundItem = items.find(item => item.id === itemParam);
                 
                 if (foundItem) {
                     foundCategory = categoryId;
